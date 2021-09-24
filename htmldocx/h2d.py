@@ -2,14 +2,11 @@
 Make 'span' in tags dict a stack
 maybe do the same for all tags in case of unclosed tags?
 optionally use bs4 to clean up invalid html?
-
 the idea is that there is a method that converts html files into docx
 but also have api methods that let user have more control e.g. so they
 can nest calls to something like 'convert_chunk' in loops
-
 user can pass existing document object as arg 
 (if they want to manage rest of document themselves)
-
 How to deal with block level style applied over table elements? e.g. text align
 """
 import re, argparse
@@ -50,7 +47,6 @@ def fetch_image(url):
     """
     Attempts to fetch an image from a url. 
     If successful returns a bytes object, else returns None
-
     :return:
     """
     try:
@@ -65,33 +61,24 @@ def remove_last_occurence(ls, x):
 
 def remove_whitespace(string, leading=False, trailing=False):
     """Remove white space from a string.
-
     Args:
         string(str): The string to remove white space from.
         leading(bool, optional): Remove leading new lines when True.
         trailing(bool, optional): Remove trailing new lines when False.
-
     Returns:
         str: The input string with new line characters removed and white space squashed.
-
     Examples:
-
         Single or multiple new line characters are replaced with space.
-
             >>> remove_whitespace("abc\\ndef")
             'abc def'
             >>> remove_whitespace("abc\\n\\n\\ndef")
             'abc def'
-
         New line characters surrounded by white space are replaced with a single space.
-
             >>> remove_whitespace("abc \\n \\n \\n def")
             'abc def'
             >>> remove_whitespace("abc  \\n  \\n  \\n  def")
             'abc def'
-
         Leading and trailing new lines are replaced with a single space.
-
             >>> remove_whitespace("\\nabc")
             ' abc'
             >>> remove_whitespace("  \\n  abc")
@@ -100,18 +87,14 @@ def remove_whitespace(string, leading=False, trailing=False):
             'abc '
             >>> remove_whitespace("abc  \\n  ")
             'abc '
-
         Use ``leading=True`` to remove leading new line characters, including any surrounding
         white space:
-
             >>> remove_whitespace("\\nabc", leading=True)
             'abc'
             >>> remove_whitespace("  \\n  abc", leading=True)
             'abc'
-
         Use ``trailing=True`` to remove trailing new line characters, including any surrounding
         white space:
-
             >>> remove_whitespace("abc  \\n  ", trailing=True)
             'abc'
     """
@@ -396,10 +379,17 @@ class HtmlToDocx(HTMLParser):
             return
 
         current_attrs = dict(attrs)
-
         if tag == 'span':
             self.tags['span'].append(current_attrs)
             return
+        elif tag == 'strong':
+            self.tags['span'].append(current_attrs)
+        elif tag == 'em':
+            self.tags['span'].append(current_attrs)
+        elif tag == 'u':
+            self.tags['span'].append(current_attrs)
+        elif tag == 's':
+            self.tags['span'].append(current_attrs)
         elif tag == 'ol' or tag == 'ul':
             self.tags['list'].append(tag)
             return # don't apply styles for now
@@ -481,6 +471,18 @@ class HtmlToDocx(HTMLParser):
             if self.tags['span']:
                 self.tags['span'].pop()
                 return
+        elif tag == 'strong':
+            if self.tags['span']:
+                self.tags['span'].pop()
+        elif tag == 'u':
+            if self.tags['span']:
+                self.tags['span'].pop()
+        elif tag == 'em':
+            if self.tags['span']:
+                self.tags['span'].pop()
+        elif tag == 's':
+            if self.tags['span']:
+                self.tags['span'].pop()
         elif tag == 'ol' or tag == 'ul':
             remove_last_occurence(self.tags['list'], tag)
             return
@@ -536,7 +538,6 @@ class HtmlToDocx(HTMLParser):
         Returns array containing only the highest level tables
         Operates on the assumption that bs4 returns child elements immediately after
         the parent element in `find_all`. If this changes in the future, this method will need to be updated
-
         :return:
         """
         new_tables = []
